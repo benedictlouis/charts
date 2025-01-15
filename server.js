@@ -136,11 +136,14 @@ app.get('/jobs-per-month', async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT 
-        bulan,
+        EXTRACT(YEAR FROM tanggal_awal) AS year,
+        EXTRACT(MONTH FROM tanggal_awal) AS month,
+        TO_CHAR(tanggal_awal, 'Mon YYYY') AS month_year,
         COUNT(*) AS total_jobs
       FROM network_support
-      GROUP BY bulan
-      ORDER BY bulan ASC;
+      WHERE tanggal_awal IS NOT NULL
+      GROUP BY year, month, month_year
+      ORDER BY year ASC, month ASC;
     `);
     res.json(result.rows);
   } catch (err) {

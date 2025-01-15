@@ -144,8 +144,15 @@ const App = () => {
 
   const jobsPerMonthChartOption = {
     title: { text: 'Jobs per Month', left: 'center' },
-    xAxis: { type: 'category', data: jobsPerMonthData.map(d => d.bulan) },
-    yAxis: { type: 'value', name: 'Jobs' },
+    tooltip: { trigger: 'axis' },
+    xAxis: { 
+      type: 'category', 
+      data: jobsPerMonthData.map(d => d.month_year) // Ganti 'bulan' dengan 'month_year'
+    },
+    yAxis: { 
+      type: 'value', 
+      name: 'Jobs' 
+    },
     series: [{
       data: jobsPerMonthData.map(d => d.total_jobs),
       type: 'line',
@@ -153,7 +160,7 @@ const App = () => {
       areaStyle: { color: 'rgba(255, 140, 0, 0.3)' },
       lineStyle: { color: '#FF8C00' },
     }],
-  };
+  };  
 
   return (
     <div>
