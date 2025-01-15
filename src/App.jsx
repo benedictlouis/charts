@@ -4,6 +4,8 @@ import axios from 'axios';
 
 const App = () => {
   const [durationsData, setDurationsData] = useState([]);
+  const [averageDurations, setAverageDurations] = useState([]);
+  const [jobCategories, setJobCategories] = useState([]);
   const [jobsPerPicData, setJobsPerPicData] = useState([]);
   const [statusDistributionData, setStatusDistributionData] = useState([]);
   const [jobsPerMonthData, setJobsPerMonthData] = useState([]);
@@ -12,6 +14,14 @@ const App = () => {
     axios.get('http://localhost:3000/durations')
       .then(response => setDurationsData(response.data))
       .catch(error => console.error('Error fetching durations:', error));
+
+    axios.get('http://localhost:3000/average-durations')
+      .then(response => setAverageDurations(response.data))
+      .catch(error => console.error('Error fetching average durations:', error));
+
+    axios.get('http://localhost:3000/job-categories')
+      .then(response => setJobCategories(response.data))
+      .catch(error => console.error('Error fetching job categories:', error));
 
     axios.get('http://localhost:3000/jobs-per-pic')
       .then(response => setJobsPerPicData(response.data))
@@ -45,6 +55,60 @@ const App = () => {
       areaStyle: { color: 'rgba(64, 158, 255, 0.3)' },
     }],
   };
+
+  const averageDurationsChartOption = {
+    title: { text: 'Average Task Durations', left: 'center' },
+    tooltip: {
+      trigger: 'axis',
+      formatter: (params) => {
+        const { name, value } = params[0];
+        return `${name}<br>Average Duration: ${parseFloat(value).toFixed(2)} minutes`;
+      },
+    },
+    xAxis: { 
+      type: 'category', 
+      data: averageDurations.map(d => `Year ${d.year}, Week ${d.week}`)
+    },
+    yAxis: { type: 'value', name: 'Avg Duration (minutes)' },
+    series: [{
+      data: averageDurations.map(d => d.avg_duration_minutes),
+      type: 'bar',
+      color: '#409EFF',
+    }],
+  };
+
+  const jobCategoriesChartOption = {
+    title: {
+      text: 'Job Categories Distribution',
+      left: 'center',
+    },
+    tooltip: {
+      trigger: 'item',
+      formatter: '{b}: {c} jobs ({d}%)',
+    },
+    legend: {
+      orient: 'vertical',
+      left: 'left',
+    },
+    series: [
+      {
+        name: 'Job Categories',
+        type: 'pie',
+        radius: '50%',
+        data: jobCategories.map(cat => ({
+          value: cat.total_jobs,
+          name: cat.kategori_pekerjaan,
+        })),
+        emphasis: {
+          itemStyle: {
+            shadowBlur: 10,
+            shadowOffsetX: 0,
+            shadowColor: 'rgba(0, 0, 0, 0.5)',
+          },
+        },
+      },
+    ],
+  };  
  
   const jobsPerPicChartOption = {
     title: { text: 'Jobs per PIC', left: 'center' },
@@ -95,6 +159,8 @@ const App = () => {
     <div>
       <h1>Data Visualization Dashboard</h1>
       <ReactECharts option={durationsChartOption} style={{ height: 400 }} />
+      <ReactECharts option={averageDurationsChartOption} style={{ height: 400 }} />
+      <ReactECharts option={jobCategoriesChartOption} style={{ height: 400 }} />
       <ReactECharts option={jobsPerPicChartOption} style={{ height: 400 }} />
       <ReactECharts option={statusDistributionChartOption} style={{ height: 400 }} />
       <ReactECharts option={jobsPerMonthChartOption} style={{ height: 400 }} />

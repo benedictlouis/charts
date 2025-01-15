@@ -27,10 +27,17 @@ app.get('/durations', async (req, res) => {
     const result = await pool.query(`
       SELECT 
         id,
-        ROUND(EXTRACT(EPOCH FROM (jam_selesai - jam_awal)) / 60, 2) AS duration_minutes,
+        ROUND(
+          EXTRACT(EPOCH FROM (
+            (tanggal_selesai + jam_selesai::time) - (tanggal_awal + jam_awal::time)
+          )) / 60, 
+          2
+        ) AS duration_minutes,
         pic
       FROM network_support
-      WHERE jam_selesai IS NOT NULL AND jam_awal IS NOT NULL;
+      WHERE 
+        tanggal_awal IS NOT NULL AND jam_awal IS NOT NULL AND 
+        tanggal_selesai IS NOT NULL AND jam_selesai IS NOT NULL;
     `);
     res.json(result.rows);
   } catch (err) {
@@ -38,6 +45,46 @@ app.get('/durations', async (req, res) => {
     res.status(500).send('Error fetching durations');
   }
 });
+
+
+app.get('/average-durations', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        EXTRACT(YEAR FROM tanggal_awal) AS year,
+        EXTRACT(MONTH FROM tanggal_awal) AS month,
+        EXTRACT(WEEK FROM tanggal_awal) AS week,
+        ROUND(AVG(EXTRACT(EPOCH FROM (jam_selesai - jam_awal)) / 60), 2) AS avg_duration_minutes
+      FROM network_support
+      WHERE jam_selesai IS NOT NULL AND jam_awal IS NOT NULL
+      GROUP BY EXTRACT(YEAR FROM tanggal_awal), EXTRACT(MONTH FROM tanggal_awal), EXTRACT(WEEK FROM tanggal_awal)
+      ORDER BY year, month, week;
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error fetching average durations');
+  }
+});
+
+// job categories
+app.get('/job-categories', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        kategori_pekerjaan,
+        COUNT(*) AS total_jobs
+      FROM network_support
+      GROUP BY kategori_pekerjaan
+      ORDER BY total_jobs DESC;
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error fetching job categories');
+  }
+});
+
 
 // jobs per pic
 app.get('/jobs-per-pic', async (req, res) => {
