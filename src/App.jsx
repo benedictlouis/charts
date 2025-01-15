@@ -46,8 +46,26 @@ const App = () => {
         return `${name}<br>Duration: ${parseFloat(value).toFixed(2)} minutes`;
       },
     },
-    xAxis: { type: 'category', data: durationsData.map(d => `Task ${d.id}`) },
+    xAxis: { 
+      type: 'category', 
+      data: durationsData.map(d => `Task ${d.id}`),
+    },
     yAxis: { type: 'value', name: 'Duration (minutes)' },
+    dataZoom: [
+      {
+        type: 'slider',
+        show: true,
+        xAxisIndex: 0,
+        start: 0,
+        end: 100,
+      },
+      {
+        type: 'inside',
+        xAxisIndex: 0,
+        start: 0,
+        end: 100,
+      },
+    ],
     series: [{
       data: durationsData.map(d => d.duration_minutes),
       type: 'line',
@@ -55,6 +73,7 @@ const App = () => {
       areaStyle: { color: 'rgba(64, 158, 255, 0.3)' },
     }],
   };
+
 
   const averageDurationsChartOption = {
     title: { text: 'Average Task Durations', left: 'center' },
@@ -65,9 +84,9 @@ const App = () => {
         return `${name}<br>Average Duration: ${parseFloat(value).toFixed(2)} minutes`;
       },
     },
-    xAxis: { 
-      type: 'category', 
-      data: averageDurations.map(d => `Year ${d.year}, Week ${d.week}`)
+    xAxis: {
+      type: 'category',
+      data: averageDurations.map(d => `Year ${d.year}, Week ${d.week}`),
     },
     yAxis: { type: 'value', name: 'Avg Duration (minutes)' },
     series: [{
@@ -75,6 +94,19 @@ const App = () => {
       type: 'bar',
       color: '#409EFF',
     }],
+    dataZoom: [
+      {
+        type: 'slider',  
+        show: true,
+        xAxisIndex: [0],
+        start: 0,  
+        end: 100, 
+      },
+      {
+        type: 'inside',  
+        xAxisIndex: [0],
+      }
+    ],
   };
 
   const jobCategoriesChartOption = {
@@ -119,13 +151,29 @@ const App = () => {
         return `${name}<br>Total Jobs: ${value}`;
       },
     },
-    xAxis: { type: 'category', data: jobsPerPicData.map(d => d.pic_name) },
+    xAxis: { 
+      type: 'category', 
+      data: jobsPerPicData.map(d => d.pic_name) 
+    },
     yAxis: { type: 'value', name: 'Jobs' },
     series: [{
       data: jobsPerPicData.map(d => d.total_jobs),
       type: 'bar',
       color: '#67C23A',
     }],
+    dataZoom: [
+      {
+        type: 'slider',  
+        show: true,
+        xAxisIndex: [0],
+        start: 0,
+        end: 100,
+      },
+      {
+        type: 'inside',  
+        xAxisIndex: [0],
+      }
+    ],
   };  
 
   const statusDistributionChartOption = {
@@ -147,12 +195,27 @@ const App = () => {
     tooltip: { trigger: 'axis' },
     xAxis: { 
       type: 'category', 
-      data: jobsPerMonthData.map(d => d.month_year) // Ganti 'bulan' dengan 'month_year'
+      data: jobsPerMonthData.map(d => d.month_year),
     },
     yAxis: { 
       type: 'value', 
       name: 'Jobs' 
     },
+    dataZoom: [
+      {
+        type: 'slider',
+        show: true,
+        xAxisIndex: 0,
+        start: 0,
+        end: Math.min(100, (10 / jobsPerMonthData.length) * 100),
+      },
+      {
+        type: 'inside',
+        xAxisIndex: 0,
+        start: 0,
+        end: Math.min(100, (10 / jobsPerMonthData.length) * 100),
+      },
+    ],
     series: [{
       data: jobsPerMonthData.map(d => d.total_jobs),
       type: 'line',
@@ -160,8 +223,8 @@ const App = () => {
       areaStyle: { color: 'rgba(255, 140, 0, 0.3)' },
       lineStyle: { color: '#FF8C00' },
     }],
-  };  
-
+  };
+  
   return (
     <div>
       <h1>Data Visualization Dashboard</h1>
