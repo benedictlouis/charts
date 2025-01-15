@@ -151,30 +151,14 @@ const App = () => {
         return `${name}<br>Total Jobs: ${value}`;
       },
     },
-    xAxis: { 
-      type: 'category', 
-      data: jobsPerPicData.map(d => d.pic_name) 
-    },
+    xAxis: { type: 'category', data: jobsPerPicData.map(d => d.pic_name) },
     yAxis: { type: 'value', name: 'Jobs' },
     series: [{
       data: jobsPerPicData.map(d => d.total_jobs),
       type: 'bar',
       color: '#67C23A',
     }],
-    dataZoom: [
-      {
-        type: 'slider',  
-        show: true,
-        xAxisIndex: [0],
-        start: 0,
-        end: 100,
-      },
-      {
-        type: 'inside',  
-        xAxisIndex: [0],
-      }
-    ],
-  };  
+  };
 
   const statusDistributionChartOption = {
     title: { text: 'Job Status Distribution', left: 'center' },
