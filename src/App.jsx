@@ -33,7 +33,7 @@ const App = () => {
       trigger: 'axis',
       formatter: (params) => {
         const { name, value } = params[0];
-        return `${name}<br>Duration: ${value} minutes`;
+        return `${name}<br>Duration: ${parseFloat(value).toFixed(2)} minutes`;
       },
     },
     xAxis: { type: 'category', data: durationsData.map(d => `Task ${d.id}`) },
@@ -44,8 +44,8 @@ const App = () => {
       smooth: false,
       areaStyle: { color: 'rgba(64, 158, 255, 0.3)' },
     }],
-  };  
-
+  };
+ 
   const jobsPerPicChartOption = {
     title: { text: 'Jobs per PIC', left: 'center' },
     tooltip: {
