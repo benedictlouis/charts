@@ -4,9 +4,11 @@ import axios from 'axios';
 
 const App = () => {
   const [durationsData, setDurationsData] = useState([]);
+  const [durationsByCategoryData, setDurationsByCategoryData] = useState([]);
   const [averageDurations, setAverageDurations] = useState([]);
   const [jobCategories, setJobCategories] = useState([]);
   const [jobsPerPicData, setJobsPerPicData] = useState([]);
+  const [picPercentageData, setPicPercentageData] = useState([]);
   const [statusDistributionData, setStatusDistributionData] = useState([]);
   const [jobsPerMonthData, setJobsPerMonthData] = useState([]);
 
@@ -14,6 +16,10 @@ const App = () => {
     axios.get('http://localhost:3000/durations')
       .then(response => setDurationsData(response.data))
       .catch(error => console.error('Error fetching durations:', error));
+
+    axios.get('http://localhost:3000/durations-by-category')
+      .then(response => setDurationsByCategoryData(response.data))
+      .catch(error => console.error('Error fetching durations by category:', error));
 
     axios.get('http://localhost:3000/average-durations')
       .then(response => setAverageDurations(response.data))
@@ -26,6 +32,10 @@ const App = () => {
     axios.get('http://localhost:3000/jobs-per-pic')
       .then(response => setJobsPerPicData(response.data))
       .catch(error => console.error('Error fetching jobs per PIC:', error));
+      
+    axios.get('http://localhost:3000/jobs-per-pic-percentage')
+      .then(response => setPicPercentageData(response.data))
+      .catch(error => console.error('Error fetching PIC percentage:', error));
 
     axios.get('http://localhost:3000/job-status-distribution')
       .then(response => setStatusDistributionData(response.data))
@@ -74,7 +84,36 @@ const App = () => {
     }],
   };
 
-
+  const durationsByCategoryChartOption = {
+    title: { text: 'Average Duration by Job Category', left: 'center' },
+    tooltip: {
+      trigger: 'axis',
+      formatter: (params) => {
+        const { name, value } = params[0];
+        return `${name}<br>Avg Duration: ${parseFloat(value).toFixed(2)} minutes`;
+      },
+    },
+    xAxis: {
+      type: 'category',
+      data: durationsByCategoryData.map(d => d.kategori_pekerjaan),
+    },
+    yAxis: { 
+      type: 'value', 
+      name: 'Avg Duration (minutes)' 
+    },
+    series: [{
+      data: durationsByCategoryData.map(d => d.avg_duration_minutes), 
+      type: 'bar',
+      smooth: false,
+      color: '#FF7043',
+      label: {
+        show: true,
+        position: 'top',
+        formatter: '{c} min',
+      },
+    }],
+  };
+  
   const averageDurationsChartOption = {
     title: { text: 'Average Task Durations', left: 'center' },
     tooltip: {
@@ -160,6 +199,60 @@ const App = () => {
     }],
   };
 
+  const generateGaugeOptions = (name, percentage) => {
+    // Pastikan percentage adalah angka, jika tidak, ubah menjadi 0
+    const value = typeof percentage === 'number' ? percentage : parseFloat(percentage) || 0;
+  
+    return {
+      title: {
+        text: `${name} Jobs Percentage`,
+        left: 'center',
+      },
+      series: [
+        {
+          type: 'gauge',
+          radius: '80%',
+          startAngle: 90,
+          endAngle: -270,
+          pointer: { show: false },
+          progress: {
+            show: true,
+            overlap: false,
+            roundCap: true,
+            clip: false,
+            itemStyle: {
+              color: '#4caf50', 
+            },
+          },
+          axisLine: {
+            lineStyle: {
+              width: 10,
+            },
+          },
+          axisTick: { show: false },
+          splitLine: { show: false },
+          axisLabel: { show: false },
+          data: [
+            {
+              value: value,
+              name: `${value.toFixed(2)}%`, 
+            },
+          ],
+          title: {
+            offsetCenter: [0, '-20%'],
+            fontSize: 16,
+          },
+          detail: {
+            valueAnimation: true,
+            fontSize: 20,
+            offsetCenter: [0, '10%'],
+            formatter: '{value}%',
+          },
+        },
+      ],
+    };
+  };  
+
   const statusDistributionChartOption = {
     title: { text: 'Job Status Distribution', left: 'center' },
     tooltip: { trigger: 'item' },
@@ -213,11 +306,27 @@ const App = () => {
     <div>
       <h1>Data Visualization Dashboard</h1>
       <ReactECharts option={durationsChartOption} style={{ height: 400 }} />
+      <ReactECharts option={durationsByCategoryChartOption} style={{ height: 400 }} />
       <ReactECharts option={averageDurationsChartOption} style={{ height: 400 }} />
       <ReactECharts option={jobCategoriesChartOption} style={{ height: 400 }} />
       <ReactECharts option={jobsPerPicChartOption} style={{ height: 400 }} />
       <ReactECharts option={statusDistributionChartOption} style={{ height: 400 }} />
       <ReactECharts option={jobsPerMonthChartOption} style={{ height: 400 }} />
+
+      <div style={{ marginBottom: '20px' }}>
+      <h2>Jobs Per PIC Percentage</h2>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
+        {picPercentageData.map((picData, index) => (
+          <div key={index} style={{ flex: '1 1 30%', minWidth: '250px' }}>
+            <ReactECharts
+              option={generateGaugeOptions(picData.pic_name, picData.percentage)}
+              style={{ height: 300 }}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+
     </div>
   );
 };

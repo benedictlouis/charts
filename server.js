@@ -46,6 +46,33 @@ app.get('/durations', async (req, res) => {
   }
 });
 
+app.get('/durations-by-category', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        kategori_pekerjaan,
+        ROUND(
+          AVG(
+            EXTRACT(EPOCH FROM (
+              (tanggal_selesai + jam_selesai::time) - (tanggal_awal + jam_awal::time)
+            )) / 60
+          ), 
+          2
+        ) AS avg_duration_minutes
+      FROM network_support
+      WHERE 
+        tanggal_awal IS NOT NULL AND jam_awal IS NOT NULL AND 
+        tanggal_selesai IS NOT NULL AND jam_selesai IS NOT NULL
+      GROUP BY kategori_pekerjaan
+      ORDER BY avg_duration_minutes DESC;
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error fetching durations by category');
+  }
+});
+
 // average durations
 app.get('/average-durations', async (req, res) => {
   try {
@@ -110,6 +137,27 @@ app.get('/jobs-per-pic', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send('Error fetching jobs per PIC');
+  }
+});
+
+app.get('/jobs-per-pic-percentage', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      WITH total_jobs AS (
+        SELECT COUNT(*) AS total FROM network_support
+      )
+      SELECT 
+        unnest(pic) AS pic_name,
+        COUNT(*) AS total_jobs,
+        ROUND((COUNT(*) * 100.0 / (SELECT total FROM total_jobs)), 2) AS percentage
+      FROM network_support
+      GROUP BY pic_name
+      ORDER BY total_jobs DESC;
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error fetching jobs per PIC with percentages');
   }
 });
 

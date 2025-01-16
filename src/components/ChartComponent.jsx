@@ -1,57 +1,25 @@
-import React, { useEffect, useState } from 'react';
-import ReactECharts from 'echarts-for-react';
-import axios from 'axios';
+import React, { useEffect, useRef } from 'react';
+import * as echarts from 'echarts';
 
-const ChartComponent = () => {
-  const [chartData, setChartData] = useState([]);
+const ChartContainer = ({ title, options }) => {
+  const chartRef = useRef(null);
 
   useEffect(() => {
-    axios.get('http://localhost:3000/data')
-      .then(response => {
-        const data = response.data;
-        const categories = data.map(item => `Activity ${item.id}`);
-        const durations = data.map(item => item.duration_minutes);
-        setChartData({ categories, durations });
-      })
-      .catch(error => console.error('Error fetching data:', error));
-  }, []);
+    const chartInstance = echarts.init(chartRef.current);
+    chartInstance.setOption(options);
 
-  const getOption = () => ({
-    title: {
-      text: 'Activity Durations (Minutes)',
-    },
-    tooltip: {
-      trigger: 'axis',
-    },
-    xAxis: {
-      type: 'category',
-      data: chartData.categories || [],
-    },
-    yAxis: {
-      type: 'value',
-      name: 'Duration (minutes)',
-    },
-    series: [
-      {
-        data: chartData.durations || [],
-        type: 'line', 
-        smooth: false, 
-        areaStyle: {  
-          normal: {
-            color: 'rgba(64, 158, 255, 0.3)',
-          },
-        },
-        lineStyle: {
-          color: '#409eff', 
-          width: 2, 
-        },
-      },
-    ],
-  });  
+    // Cleanup untuk menghindari memory leak
+    return () => {
+      chartInstance.dispose();
+    };
+  }, [options]);
 
   return (
-    <ReactECharts option={getOption()} style={{ height: 400 }} />
+    <div className="flex flex-col bg-white rounded-lg shadow-md p-4">
+      <h3 className="text-lg font-semibold text-center mb-2">{title}</h3>
+      <div ref={chartRef} className="w-full h-[300px]"></div>
+    </div>
   );
 };
 
-export default ChartComponent;
+export default ChartContainer;
